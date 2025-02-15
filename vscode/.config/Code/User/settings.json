@@ -1,0 +1,15 @@
+{
+    "explorer.confirmDelete": false,
+    "editor.largeFileOptimizations": false,
+    "git.openRepositoryInParentFolders": "never",
+    "window.autoDetectColorScheme": true,
+    "workbench.colorTheme": "Default Light Modern",
+    "editor.minimap.enabled": false,
+    "editor.renderWhitespace": "all",
+    "telemetry.telemetryLevel": "off",
+    "search.followSymlinks": false,
+    "workbench.startupEditor": "none",
+    "github.copilot.enable": {
+        "markdown": true
+    },
+}
