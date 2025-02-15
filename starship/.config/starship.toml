@@ -1,0 +1,72 @@
+"$schema" = "https://starship.rs/config-schema.json"
+
+format = "$directory$git_branch$git_commit$git_status [»](fg:33) "
+
+right_format = "$git_state 😃 $time$username"
+
+scan_timeout = 30
+command_timeout = 750
+add_newline = false
+follow_symlinks = true
+
+[directory]
+format = "[$path]($style)"
+truncation_length = 10
+truncate_to_repo = false
+style = "fg:33"
+home_symbol = "~"
+
+[git_branch]
+always_show_remote = false
+format = ' [\(](fg:33)[$symbol$branch]($style)[\)](fg:33)'
+symbol = " "
+style = "green"
+truncation_length = 9223372036854775807
+truncation_symbol = "…"
+only_attached = true
+ignore_branches = []
+disabled = false
+
+[git_commit]
+commit_hash_length = 12
+format = ' [\(](fg:33)[$hash$tag]($style)[\)](fg:33)'
+style = "green"
+only_detached = true
+tag_disabled = true
+tag_max_candidates = 1
+tag_symbol = " 🏷 "
+disabled = false
+
+[git_status]
+format = '[$all_status]($style)'
+conflicted = ""
+ahead = ""
+behind = ""
+diverged = ""
+untracked = "?"
+stashed = ""
+modified = "*"
+staged = "+"
+renamed = ""
+deleted = ""
+typechanged = ""
+style = "bright-yellow"
+ignore_submodules = true
+disabled = false
+
+[git_state]
+format = '\([$state( $progress_current/$progress_total)]($style)\)'
+rebase = "REBASING"
+merge = "MERGING"
+revert = "REVERTING"
+cherry_pick = "CHERRY-PICKING"
+bisect = "BISECTING"
+am = "AM"
+am_or_rebase = "AM/REBASE"
+style = "bright-yellow"
+disabled = false
+
+[time]
+format = "[$time]($style)"
+style = "fg:105"
+disabled = false
