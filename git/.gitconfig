@@ -1,0 +1,9 @@
+[user]
+	name = Clément Le Goffic
+	email = clemlegoffic@gmail.com
+[core]
+	editor = vim
+	commitGraph = true
+[gc]
+	writeCommitGraph = true
+
