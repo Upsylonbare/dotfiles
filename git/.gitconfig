@@ -7,3 +7,5 @@
 [gc]
 	writeCommitGraph = true
 
+[init]
+	defaultbranch = main
