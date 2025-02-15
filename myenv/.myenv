@@ -1,0 +1,217 @@
+#! /bin/bash
+
+# Colored manpages
+export LESS_TERMCAP_mb=$'\e[1;32m'
+export LESS_TERMCAP_md=$'\e[1;32m'
+export LESS_TERMCAP_me=$'\e[0m'
+export LESS_TERMCAP_so=$'\e[01;33m'
+export LESS_TERMCAP_se=$'\e[0m'
+export LESS_TERMCAP_us=$'\e[1;4;31m'
+export LESS_TERMCAP_ue=$'\e[0m'
+
+export FZF_DEFAULT_OPTS
+
+export XDG_CONFIG_HOME="$HOME/.config"
+#ZSH
+export ZDOTDIR="$XDG_CONFIG_HOME/zsh"
+export HISTFILE="$ZDOTDIR/zsh_history"
+export ZSH_COMPDUMP="$ZDOTDIR/zcompdump-$HOST"
+#vim
+export VIMDOTDIR="$XDG_CONFIG_HOME/vim"
+#less
+export LESSHISTFILE="${XDG_CONFIG_HOME}/less/lesshst"
+#gdb
+export GDBHISTFILE="${XDG_CONFIG_HOME}/gdb/gdb_history"
+
+export EXA_COLORS="di=38;5;033:da=38;5;146"
+export LS_COLORS=${LS_COLORS//di=01\;34:/di=38\;5\;033:}
+
+# Function to add a directory to PATH
+add_to_path() {
+    if [ -d "$1" ] ; then
+        case ":$PATH:" in
+            *:"$1":*)
+                ;;
+            *)
+                PATH="$1:$PATH"
+                ;;
+        esac
+    fi
+}
+
+# Add your custom directories to PATH
+add_to_path "$HOME/bin"
+add_to_path "$HOME/.local/bin"
+add_to_path "$HOME/go/bin"
+add_to_path "$HOME/st/stm32cubeclt/GNU-tools-for-STM32/bin"
+add_to_path "$HOME/.cargo/bin"
+add_to_path "/opt/nvim-linux-x86_64/bin"
+alias path="echo \$PATH | tr ':' '\n'"
+
+#My aliases
+alias ll='exa -laF --group-directories-first --header --long --icons'
+alias la='exa -a --group-directories-first --icons'
+alias l='exa -lF --group-directories-first --header --long --icons'
+
+alias up='sudo apt-get update -y && sudo apt-get upgrade -y'
+alias reload='echo "Sourcing environnement"; source ~/.zshrc'
+alias cat='batcat -pp'
+alias wget='wget --hsts-file "$XDG_CONFIG_HOME"/wget/.wget-hsts'
+
+alias gitka='gitk --all --max-count=15000'
+alias s='s -p google'
+
+alias findall='find * | \
+    fzf --prompt "All> " \
+        --header "CTRL-D: Directories / CTRL-F: Files" \
+        --bind "ctrl-d:change-prompt(Directories>)+reload(find * -type d)" \
+        --bind "ctrl-f:change-prompt(Files>)+reload(find * -type f)" | xargs realpath | xclip -r -selection clipboard'
+
+
+k() {
+    ps -ef | fzf --reverse | awk '{print $2}' | xargs kill -9
+}
+
+_view_file="echo {} | xargs -I % sh -c 'batcat --style=numbers --color=always % | less -R'"
+_view_diff="echo {} | xargs -I % sh -c 'git diff % | diff-so-fancy' | less -R"
+
+gdiff() {
+    local path_to_repo
+    path_to_repo="$(git rev-parse --show-toplevel)"
+    git diff \
+        "$@" \
+        --name-only | sed "s,^,$path_to_repo/," |
+            fzf -m \
+                --reverse \
+                --tiebreak=index \
+                --no-multi \
+                --ansi \
+                --preview="git diff {} | diff-so-fancy" \
+                --header "Enter: view diff, CTRL-f: view file" \
+                --bind "ctrl-f:execute:$_view_file" \
+                --bind "enter:execute:$_view_diff" \
+}
+
+fe() {
+    local file
+    file=$(fzf --preview 'batcat --style=numbers --color=always {}')
+    if [ -n "$file" ]; then
+        editor "$file"
+    fi
+}
+
+fcd() {
+    local dir
+    dir=$(find -L . -type d 2> /dev/null | fzf +m)
+
+    if [ -n "$dir" ]; then
+        cd "$dir" || exit
+    fi
+}
+
+lg() {
+    git rev-parse --is-inside-work-tree &>/dev/null || return
+    if [ $# -eq 0 ]; then
+        my_git_log -10000
+    else
+        my_git_log "$@"
+    fi
+}
+
+_gitLogLineToHash="grep -o '[a-f0-9]\{12\}' | head -1"
+_view_commit="echo {} | $_gitLogLineToHash | xargs -I % sh -c 'git show --color=always % | diff-so-fancy' | less -R -n --mouse"
+_copy_commit_hash="echo {} | $_gitLogLineToHash | xclip -r -selection clipboard"
+_git_checkout="echo {} | $_gitLogLineToHash | xargs -I % sh -c 'git checkout %'"
+_git_rebase="echo {} | $_gitLogLineToHash | xargs -I % sh -c 'git rebase -i %'"
+_test="echo {} | $_gitLogLineToHash | xargs -I % sh -c 'git show --color=always %' | less -R -n --mouse"
+
+my_git_log() {
+    git log \
+    --abbrev=12 \
+    --graph \
+    --oneline \
+    --color=always \
+    --format="%C(cyan)%h %C(blue)%ar %C(auto)%d %C(yellow)%s %C(white)%ae" "$@" |
+    fzf -i -e +s \
+        --reverse \
+        --tiebreak=index \
+        --no-multi \
+        --ansi \
+        --preview="$_view_commit" \
+        --header "enter: view, CTRL+c: copy hash, CTRL+x: checkout, CTRL+r: rebase" \
+        --bind "enter:execute:$_view_commit" \
+        --bind "ctrl-c:execute:$_copy_commit_hash" \
+        --bind "ctrl-x:execute:$_git_checkout" \
+        --bind "ctrl-r:execute($_git_rebase)+abort" \
+        --bind "ctrl-t:execute:$_test"
+}
+
+proxy_config() {
+    local PROXY_CREDENTIAL_FILE="$HOME/.proxy/.credentials"
+    local PROXY_INFO_FILE="$HOME/.proxy/.info"
+    mkdir -p "${PROXY_CREDENTIAL_FILE%/*}"
+    test -f "$PROXY_CREDENTIAL_FILE" && chmod 600 "$PROXY_CREDENTIAL_FILE"
+    read "ENTRY_user?Proxy Username: "
+    read -s "ENTRY_pass?Proxy Password: "
+    read "ENTRY_server?Proxy Server: "
+    read "ENTRY_no_proxy_domain?No Proxy Domains: "
+    echo -n "${ENTRY_user}:${ENTRY_pass}" > "$PROXY_CREDENTIAL_FILE"
+    echo -n "${ENTRY_server} ${ENTRY_no_proxy_domain}" > "$PROXY_INFO_FILE"
+}
+
+proxy_set() {
+    local PROXY_CREDENTIAL_FILE="$HOME/.proxy/.credentials"
+    local NO_PROXY_BASE=localhost,127.0.0.0/8
+    local PROXY_INFO_FILE="$HOME/.proxy/.info"
+    test -f "${PROXY_CREDENTIAL_FILE}" || return 1
+    test -f "${PROXY_INFO_FILE}" || return 1
+    export http_proxy=http://$(sed "s,:.*,," "$PROXY_CREDENTIAL_FILE" | od -A n -t x1 -w128 | head -1 | tr " " "%"):$(sed "s,[^:]\+:,," $PROXY_CREDENTIAL_FILE | od -A n -t x1 -w128 | head -1 | tr " " "%")@$(sed "s, .*,," $PROXY_INFO_FILE)
+    export https_proxy=http://$(sed "s,:.*,," "$PROXY_CREDENTIAL_FILE" | od -A n -t x1 -w128 | head -1 | tr " " "%"):$(sed "s,[^:]\+:,," $PROXY_CREDENTIAL_FILE | od -A n -t x1 -w128 | head -1 | tr " " "%")@$(sed "s, .*,," $PROXY_INFO_FILE)
+    export ftp_proxy=http://$(sed "s,:.*,," "$PROXY_CREDENTIAL_FILE" | od -A n -t x1 -w128 | head -1 | tr " " "%"):$(sed "s,[^:]\+:,," $PROXY_CREDENTIAL_FILE | od -A n -t x1 -w128 | head -1 | tr " " "%")@$(sed "s, .*,," $PROXY_INFO_FILE)
+    export use_proxy=on
+    export no_proxy=$(sed "s/.* \([^ ]*\)$/\1/" "$PROXY_INFO_FILE"),${NO_PROXY_BASE}
+}
+
+proxy_echo() {
+    echo "https_proxy=$https_proxy"
+    echo "http_proxy=$http_proxy"
+    echo "ftp_proxy=$ftp_proxy"
+    echo "no_proxy=$no_proxy"
+    echo "use_proxy=$use_proxy"
+}
+
+proxy_unset() {
+    unset https_proxy
+    unset http_proxy
+    unset ftp_proxy
+    unset no_proxy
+    unset use_proxy
+
+}
+
+speed_lg()
+{
+    git config --global core.commitGraph true
+    git config --global gc.writeCommitGraph true
+    git commit-graph write
+}
+
+download_some_backgrounds() {
+    images=$(curl -s https://www.imoca.org/fr | tidy -q 2>&1 | grep "/mediacenter/uploads/xxl/" | sed 's/ //g' | sed 's/.*\/\(.*\.jpeg\).*/\1/')
+    for image in $images; do
+        wget -P ~/Pictures/wallpapers/ https://www.imoca.org/mediacenter/uploads/xxl/"$image"
+    done
+    rm ~/Pictures/wallpapers/*.1
+}
+
+load_helper_functions () {
+    emulate -LR zsh
+    if ((!$+functions[$1])) || [[ $functions[$1] = 'builtin autoload'* ]]; then
+        autoload +X +U $1
+        functions[$1]=${functions[$1]%$'\n'*}
+        $1
+  fi
+}
+load_helper_functions _git
+compdef _git lg=git-log
+compdef _git gdiff=git-diff
