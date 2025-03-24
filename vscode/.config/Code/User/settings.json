@@ -12,4 +12,12 @@
     "github.copilot.enable": {
         "markdown": true
     },
+    "editor.fontFamily": "'DroidSansM Nerd Font Mono', 'monospace', monospace",
+    "terminal.integrated.fontFamily": "'DroidSansM Nerd Font Mono', 'monospace', monospace",
+    "terminal.integrated.profiles.linux": {
+        "zsh": {
+            "path": "/usr/bin/zsh",
+            "args": ["-l", "-i"]
+        },
+    }
 }
