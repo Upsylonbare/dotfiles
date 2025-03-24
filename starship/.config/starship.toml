@@ -2,7 +2,7 @@
 
 format = "$directory$git_branch$git_commit$git_status [»](fg:33) "
 
-right_format = "$git_state 😃 $time$username"
+right_format = "$git_state ${env_var.ARCH} $c 😃 $time$username"
 
 scan_timeout = 30
 command_timeout = 750
@@ -64,6 +64,26 @@ bisect = "BISECTING"
 am = "AM"
 am_or_rebase = "AM/REBASE"
 style = "bright-yellow"
+disabled = false
+
+[env_var.ARCH]
+symbol = ""
+variable = "ARCH"
+default = ""
+format = "[$env_value]($style)"
+style = "fg 15"
+description = "The architecture of the sytem cross-compiling for"
+disabled = false
+
+[c]
+format = "[$symbol ($name-$version )]($style)"
+version_format = "v${raw}"
+symbol = ""
+detect_extensions = [ "c", "h" ]
+detect_files = [ "MAINTAINERS" ]
+detect_folders = []
+commands = [[ 'cc', '--version' ], [ 'gcc', '--version' ], [ 'clang', '--version' ]]
+style = "fg:105"
 disabled = false
 
 [time]
