@@ -89,7 +89,7 @@ gdiff() {
                 --preview="git diff {} | diff-so-fancy" \
                 --header "Enter: view diff, CTRL-f: view file" \
                 --bind "ctrl-f:execute:$_view_file" \
-                --bind "enter:execute:$_view_diff" \
+                --bind "enter:execute:$_view_diff"
 }
 
 fe() {
@@ -151,25 +151,55 @@ proxy_config() {
     local PROXY_INFO_FILE="$HOME/.proxy/.info"
     mkdir -p "${PROXY_CREDENTIAL_FILE%/*}"
     test -f "$PROXY_CREDENTIAL_FILE" && chmod 600 "$PROXY_CREDENTIAL_FILE"
-    read "ENTRY_user?Proxy Username: "
-    read -s "ENTRY_pass?Proxy Password: "
-    read "ENTRY_server?Proxy Server: "
-    read "ENTRY_no_proxy_domain?No Proxy Domains: "
+    read -r "ENTRY_user?Proxy Username: "
+    read -rs "ENTRY_pass?Proxy Password: "
+    read -r "ENTRY_server?Proxy Server: "
+    read -r "ENTRY_no_proxy_domain?No Proxy Domains: "
     echo -n "${ENTRY_user}:${ENTRY_pass}" > "$PROXY_CREDENTIAL_FILE"
     echo -n "${ENTRY_server} ${ENTRY_no_proxy_domain}" > "$PROXY_INFO_FILE"
 }
 
 proxy_set() {
+    local http_proxy
+    local https_proxy
+    local ftp_proxy
+    local use_proxy
+    local no_proxy
+
     local PROXY_CREDENTIAL_FILE="$HOME/.proxy/.credentials"
     local NO_PROXY_BASE=localhost,127.0.0.0/8
     local PROXY_INFO_FILE="$HOME/.proxy/.info"
     test -f "${PROXY_CREDENTIAL_FILE}" || return 1
     test -f "${PROXY_INFO_FILE}" || return 1
-    export http_proxy=http://$(sed "s,:.*,," "$PROXY_CREDENTIAL_FILE" | od -A n -t x1 -w128 | head -1 | tr " " "%"):$(sed "s,[^:]\+:,," $PROXY_CREDENTIAL_FILE | od -A n -t x1 -w128 | head -1 | tr " " "%")@$(sed "s, .*,," $PROXY_INFO_FILE)
-    export https_proxy=http://$(sed "s,:.*,," "$PROXY_CREDENTIAL_FILE" | od -A n -t x1 -w128 | head -1 | tr " " "%"):$(sed "s,[^:]\+:,," $PROXY_CREDENTIAL_FILE | od -A n -t x1 -w128 | head -1 | tr " " "%")@$(sed "s, .*,," $PROXY_INFO_FILE)
-    export ftp_proxy=http://$(sed "s,:.*,," "$PROXY_CREDENTIAL_FILE" | od -A n -t x1 -w128 | head -1 | tr " " "%"):$(sed "s,[^:]\+:,," $PROXY_CREDENTIAL_FILE | od -A n -t x1 -w128 | head -1 | tr " " "%")@$(sed "s, .*,," $PROXY_INFO_FILE)
-    export use_proxy=on
-    export no_proxy=$(sed "s/.* \([^ ]*\)$/\1/" "$PROXY_INFO_FILE"),${NO_PROXY_BASE}
+    http_proxy=http://$(sed "s,:.*,," "$PROXY_CREDENTIAL_FILE" | \
+        od -A n -t x1 -w128 | \
+        head -1 | \
+        tr " " "%"):$(sed "s,[^:]\+:,," "$PROXY_CREDENTIAL_FILE" | \
+        od -A n -t x1 -w128 | \
+        head -1 | \
+        tr " " "%")@$(sed "s, .*,," "$PROXY_INFO_FILE")
+    https_proxy=http://$(sed "s,:.*,," "$PROXY_CREDENTIAL_FILE" | \
+        od -A n -t x1 -w128 | \
+        head -1 | \
+        tr " " "%"):$(sed "s,[^:]\+:,," "$PROXY_CREDENTIAL_FILE" | \
+        od -A n -t x1 -w128 | \
+        head -1 | \
+        tr " " "%")@$(sed "s, .*,," "$PROXY_INFO_FILE")
+    ftp_proxy=http://$(sed "s,:.*,," "$PROXY_CREDENTIAL_FILE" | \
+        od -A n -t x1 -w128 | \
+        head -1 | \
+        tr " " "%"):$(sed "s,[^:]\+:,," "$PROXY_CREDENTIAL_FILE" | \
+        od -A n -t x1 -w128 | \
+        head -1 | \
+        tr " " "%")@$(sed "s, .*,," "$PROXY_INFO_FILE")
+    use_proxy=on
+    no_proxy=$(sed "s/.* \([^ ]*\)$/\1/" "$PROXY_INFO_FILE"),${NO_PROXY_BASE}
+
+    export http_proxy
+    export https_proxy
+    export ftp_proxy
+    export no_proxy
+    export use_proxy
 }
 
 proxy_echo() {
@@ -204,14 +234,15 @@ download_some_backgrounds() {
     rm ~/Pictures/wallpapers/*.1
 }
 
-load_helper_functions () {
-    emulate -LR zsh
-    if ((!$+functions[$1])) || [[ $functions[$1] = 'builtin autoload'* ]]; then
-        autoload +X +U $1
-        functions[$1]=${functions[$1]%$'\n'*}
-        $1
-  fi
-}
-load_helper_functions _git
+# From : https://unix.stackexchange.com/a/783056/509838
+# load_helper_functions () {
+#     emulate -LR zsh
+#     if ((!$+functions[$1])) || [[ $functions[$1] = 'builtin autoload'* ]]; then
+#         autoload +X +U $1
+#         functions[$1]=${functions[$1]%$'\n'*}
+#         $1
+#     fi
+# }
+# load_helper_functions _git
 compdef _git lg=git-log
 compdef _git gdiff=git-diff
