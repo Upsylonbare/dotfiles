@@ -1,23 +1,28 @@
 {
-    "explorer.confirmDelete": false,
+    "C_Cpp.intelliSenseEngine": "disabled",
+    "editor.fontFamily": "'DroidSansM Nerd Font Mono', 'monospace', monospace",
     "editor.largeFileOptimizations": false,
-    "git.openRepositoryInParentFolders": "never",
-    "window.autoDetectColorScheme": true,
-    "workbench.colorTheme": "Default Light Modern",
     "editor.minimap.enabled": false,
     "editor.renderWhitespace": "all",
-    "telemetry.telemetryLevel": "off",
-    "search.followSymlinks": false,
-    "workbench.startupEditor": "none",
+    "explorer.confirmDelete": false,
+    "git.openRepositoryInParentFolders": "never",
     "github.copilot.enable": {
-        "markdown": true
+        "*": true,
+        "plaintext": true,
+        "markdown": false,
+        "scminput": false
     },
-    "editor.fontFamily": "'DroidSansM Nerd Font Mono', 'monospace', monospace",
+    "search.followSymlinks": false,
+    "security.workspace.trust.untrustedFiles": "open",
+    "telemetry.telemetryLevel": "off",
     "terminal.integrated.fontFamily": "'DroidSansM Nerd Font Mono', 'monospace', monospace",
     "terminal.integrated.profiles.linux": {
         "zsh": {
             "path": "/usr/bin/zsh",
             "args": ["-l", "-i"]
         },
-    }
+    },
+    "window.autoDetectColorScheme": true,
+    "workbench.colorTheme": "Default Light Modern",
+    "workbench.startupEditor": "none",
 }
