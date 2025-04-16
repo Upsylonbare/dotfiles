@@ -3,9 +3,47 @@
 	email = clemlegoffic@gmail.com
 [core]
 	editor = vim
+	abbrev = 12
 	commitGraph = true
+	pager = less -FRSX
+	fsmonitor = true
+	untrackedCache = true
 [gc]
 	writeCommitGraph = true
 
 [init]
 	defaultbranch = main
+[pull]
+	rebase = true
+[merge]
+	conflictstyle = zdiff3
+[rebase]
+	autoSquash = true
+	autoStash = true
+	updateRefs = true
+[rerere]
+	enabled = true
+	autoupdate = true
+[commit]
+	verbose = true
+[help]
+	autocorrect = prompt
+[fetch]
+	prune = false
+	pruneTags = false
+	all = true
+[push]
+	default = simple
+	autoSetupRemote = true
+	followTags = false
+[diff]
+	colorMoved = plain
+	mnemonicPrefix = true
+	renames = true
+	algorithm = histogram
+[column]
+	ui = never
+[branch]
+	sort = -committerdate
+[tag]
+	sort = version:refname
