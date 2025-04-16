@@ -15,7 +15,7 @@ ZSH_THEME=""
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git ssh-agent aliases) 
+plugins=(git ssh-agent aliases)
 zstyle :omz:plugins:ssh-agent agent-forwarding yes
 
 source $ZSH/oh-my-zsh.sh
@@ -31,9 +31,10 @@ source $ZSH/oh-my-zsh.sh
 
 # Compilation flags
 # export ARCHFLAGS="-arch x86_64"
-
 source ~/.myenv
 
 zstyle ':completion:*' list-colors "${(@s.:.)LS_COLORS}"
+
+source "$HOME/.zshrc-perso"
 
 eval "$(starship init zsh)"
