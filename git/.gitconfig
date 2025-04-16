@@ -8,9 +8,10 @@
 	pager = less -FRSX
 	fsmonitor = true
 	untrackedCache = true
+[includeIf "gitdir:~/git/"]
+	path = ~/git/.gitconfig-perso
 [gc]
 	writeCommitGraph = true
-
 [init]
 	defaultbranch = main
 [pull]
