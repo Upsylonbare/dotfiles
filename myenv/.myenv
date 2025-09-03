@@ -244,4 +244,6 @@ download_some_backgrounds() {
 compdef _git lg=git-log
 compdef _git gdiff=git-diff
 
-source "$HOME/.myenv-perso"
+if [ -f "$HOME/.myenv-perso" ]; then
+    source "$HOME/.myenv-perso"
+fi
