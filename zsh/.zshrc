@@ -35,6 +35,8 @@ source ~/.myenv
 
 zstyle ':completion:*' list-colors "${(@s.:.)LS_COLORS}"
 
-source "$HOME/.zshrc-perso"
+if [ -f "$HOME/.zshrc-perso" ]; then
+    source "$HOME/.zshrc-perso"
+fi
 
 eval "$(starship init zsh)"
