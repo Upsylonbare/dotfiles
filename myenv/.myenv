@@ -15,7 +15,6 @@ export LS_COLORS=${LS_COLORS//di=01\;34:/di=38\;5\;033:}
 export EDITOR=vim
 export FZF_DEFAULT_OPTS
 
-source utils.sh
 
 # Function to add a directory to PATH
 add_to_path() {
@@ -37,6 +36,9 @@ add_to_path "$HOME/go/bin"
 add_to_path "$HOME/st/stm32cubeclt/GNU-tools-for-STM32/bin"
 add_to_path "$HOME/.cargo/bin"
 add_to_path "/opt/nvim-linux-x86_64/bin"
+
+source utils.sh
+
 alias path="echo \$PATH | tr ':' '\n'"
 
 #My aliases
