@@ -25,4 +25,5 @@
     "window.autoDetectColorScheme": true,
     "workbench.colorTheme": "Default Light Modern",
     "workbench.startupEditor": "none",
+    "editor.inlayHints.enabled": "off",
 }
