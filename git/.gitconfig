@@ -48,3 +48,5 @@
 	sort = -committerdate
 [tag]
 	sort = version:refname
+[b4]
+	prep-perpatch-check-cmd = ./scripts/checkpatch.pl -q --terse --no-summary --showfile --codespell --codespellfile /usr/lib/python3/dist-packages/codespell_lib/data/dictionary.txt
