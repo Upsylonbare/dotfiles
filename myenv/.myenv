@@ -18,14 +18,14 @@ export FZF_DEFAULT_OPTS
 export HISTSIZE=100000
 export SAVEHIST=$HISTSIZE
 
-# Function to add a directory to PATH
+# Function to add a directory to PATH (append to end)
 add_to_path() {
     if [ -d "$1" ] ; then
         case ":$PATH:" in
             *:"$1":*)
                 ;;
             *)
-                PATH="$1:$PATH"
+                PATH="$PATH:$1"
                 ;;
         esac
     fi
