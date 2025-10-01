@@ -31,8 +31,6 @@ LOG_LEVEL=3
 SAVE_LOGS=0
 FILE_LOGS="$(mktemp)"
 
-echo "Logs will be saved in $FILE_LOGS"
-
 echo_err() {
     if [ $LOG_LEVEL -ge 1 ]; then
         echo -e "${RED}${BOLD}[ERROR] ${1}${RESET}"
