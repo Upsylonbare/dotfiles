@@ -225,11 +225,23 @@ speed_lg()
 }
 
 download_some_backgrounds() {
-    images=$(curl -s https://www.imoca.org/fr | tidy -q 2>&1 | grep "/mediacenter/uploads/xxl/" | sed 's/ //g' | sed 's/.*\/\(.*\.jpeg\).*/\1/')
-    for image in $images; do
-        echo_debug "Downloading $image : wget -P ~/Pictures/wallpapers/ https://www.imoca.org/mediacenter/uploads/xxl/$image"
-        wget -P ~/Pictures/wallpapers/ https://www.imoca.org/mediacenter/uploads/xxl/"$image"
-    done
+    rawsite=$(mktemp)
+    curl -s https://www.imoca.org/fr -o "$rawsite"
+
+    cleanedsite=$(mktemp)
+    tidy -q -o "$cleanedsite" "$rawsite" 2>/dev/null
+
+    images_list=$(grep -o '/mediacenter/uploads/xxl/[^"]*\.jpeg' "$cleanedsite")
+    images_list=$(echo "$images_list" | uniq)
+
+    mkdir -p ~/Pictures/wallpapers/
+    while IFS= read -r image_path; do
+        [ -z "$image_path" ] && continue
+        image_url="https://www.imoca.org${image_path}"
+        echo_info "Downloading $image_url"
+        wget -P ~/Pictures/wallpapers/ "$image_url"
+    done <<< "$images_list"
+
     rm ~/Pictures/wallpapers/*.1
 }
 
