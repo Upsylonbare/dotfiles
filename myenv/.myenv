@@ -31,6 +31,28 @@ add_to_path() {
     fi
 }
 
+# Function to remove the last entry from PATH
+remove_last_from_path() {
+    # Remove any trailing colon, then strip the last ':'-separated field
+    PATH=${PATH%:}
+    if [ -z "$PATH" ]; then
+        return
+    fi
+    PATH=${PATH%:*}
+    export PATH
+}
+
+# Function to remove the first entry from PATH
+remove_first_from_path() {
+    # Remove any leading colon, then strip the first ':'-separated field
+    PATH=${PATH#:}
+    if [ -z "$PATH" ]; then
+        return
+    fi
+    PATH=${PATH#*:}
+    export PATH
+}
+
 # Add your custom directories to PATH
 add_to_path "$HOME/bin"
 add_to_path "$HOME/.local/bin"
@@ -50,7 +72,7 @@ alias l='eza -lF --group-directories-first --header --long --icons=always'
 
 alias up='sudo apt-get update -y && sudo apt-get upgrade -y'
 alias reload='echo "Sourcing environnement"; source ~/.zshrc'
-alias cat='batcat -pp'
+alias cat='bat -pp'
 alias wget='wget --hsts-file "$XDG_CONFIG_HOME"/wget/.wget-hsts'
 
 alias gitka='gitk --all --max-count=15000'
@@ -68,7 +90,7 @@ k() {
     ps -ef | fzf --reverse | awk '{print $2}' | xargs kill -9
 }
 
-_view_file="echo {} | xargs -I % sh -c 'batcat --style=numbers --color=always % | less -R'"
+_view_file="echo {} | xargs -I % sh -c 'bat --style=numbers --color=always % | less -R'"
 _view_diff="echo {} | xargs -I % sh -c 'git diff % | diff-so-fancy' | less -R"
 
 gdiff() {
@@ -90,7 +112,7 @@ gdiff() {
 
 fe() {
     local file
-    file=$(fzf --preview 'batcat --style=numbers --color=always {}')
+    file=$(fzf --preview 'bat --style=numbers --color=always {}')
     if [ -n "$file" ]; then
         editor "$file"
     fi
