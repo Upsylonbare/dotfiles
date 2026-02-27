@@ -1,8 +1,8 @@
 "$schema" = "https://starship.rs/config-schema.json"
 
-format = "$directory$git_branch$git_commit$git_status [»](fg:33) "
+format = "$username$hostname$directory$git_branch$git_commit$git_status [»](fg:33) "
 
-right_format = "$git_state ${env_var.ARCH} $c 😃 $time$username"
+right_format = "$git_state ${env_var.ARCH} $c 😃 $time"
 
 scan_timeout = 30
 command_timeout = 750
@@ -89,4 +89,14 @@ disabled = false
 [time]
 format = "[$time]($style)"
 style = "fg:105"
+disabled = false
+
+[username]
+format = "[$user]($style) on "
+disabled = false
+
+[hostname]
+ssh_only = true
+format = "[$hostname]($style) "
+style = "bold red"
 disabled = false
