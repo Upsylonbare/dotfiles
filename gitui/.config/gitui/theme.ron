@@ -1,5 +1,0 @@
-(
-   use_selection_fg: Some(false),
-   selection_bg: Some("#303030"),
-)
-
