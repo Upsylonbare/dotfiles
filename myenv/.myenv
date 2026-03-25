@@ -295,6 +295,8 @@ download_some_backgrounds() {
 
 compdef _git lg=git-log
 compdef _git gdiff=git-diff
+compdef _files fe
+compdef _cd fcd
 
 if [ -f "$HOME/.myenv-perso" ]; then
     source "$HOME/.myenv-perso"
