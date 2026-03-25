@@ -162,6 +162,26 @@ fcd() {
     fi
 }
 
+gb() {
+    git rev-parse --is-inside-work-tree &>/dev/null || return
+
+    local _preview="git log --oneline --color=always --format='%C(cyan)%h %C(blue)%ar %C(yellow)%s' -10 {1}"
+
+    git branch --all --color=never --format='%(refname:short)' |
+        fzf \
+            --reverse \
+            --ansi \
+            --border=rounded \
+            --border-label=' Git Branch ' \
+            --preview="$_preview" \
+            --preview-window=right:60% \
+            --bind "shift-up:preview-up" \
+            --bind "shift-down:preview-down" \
+            --header-first \
+            --header 'enter: checkout' \
+            --bind "enter:execute(git checkout {1})+abort"
+}
+
 lg() {
     git rev-parse --is-inside-work-tree &>/dev/null || return
     if [ $# -eq 0 ]; then
