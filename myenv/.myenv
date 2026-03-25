@@ -132,7 +132,7 @@ fcd() {
     dir=$(find -L . -type d 2> /dev/null | fzf +m)
 
     if [ -n "$dir" ]; then
-        cd "$dir" || exit
+        cd "$dir" || return 1
     fi
 }
 
