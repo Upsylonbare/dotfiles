@@ -354,6 +354,18 @@ download_some_backgrounds() {
     rm -f ~/Pictures/wallpapers/*.1
 }
 
+fssh() {
+    local host
+    host=$(grep "^Host " ~/.ssh/config | grep -v '[*?]' | awk '{print $2}' |
+        fzf \
+            --reverse \
+            --border=rounded \
+            --border-label=' SSH ' \
+            --header-first \
+            --header 'enter: connect')
+    [ -n "$host" ] && ssh "$host"
+}
+
 compdef _git lg=git-log
 compdef _git gdiff=git-diff
 compdef _files fe
