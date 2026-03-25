@@ -119,6 +119,38 @@ my_git_log() {
         --bind "ctrl-z:execute:$_revert_commit"
 }
 
+gfcp() {
+    git rev-parse --is-inside-work-tree &>/dev/null || return
+
+    local _gitLogLineToHash="grep -o '[a-f0-9]\{12\}' | head -1"
+    local _preview_commit="echo {} | $_gitLogLineToHash | xargs -I % sh -c 'git show --color=always % | diff-so-fancy'"
+    local _view_commit="echo {} | $_gitLogLineToHash | xargs -I % sh -c 'git show --color=always % | diff-so-fancy' | less"
+    local _cherry_pick="for hash in \$(echo {+} | grep -o '[a-f0-9]\{12\}' | tac); do git cherry-pick \$hash && git notes show \$hash &>/dev/null && git notes copy \$hash HEAD; done"
+
+    git log \
+    --abbrev=12 \
+    --graph \
+    --oneline \
+    --color=always \
+    --format="%C(cyan)%h %C(blue)%ar %C(auto)%d %C(yellow)%s %C(white)%ae" "$@" |
+    fzf -i -e +s \
+        --reverse \
+        --tiebreak=index \
+        --multi \
+        --ansi \
+        --border=rounded \
+        --border-label=' Git Cherry-Pick ' \
+        --preview="$_preview_commit" \
+        --preview-window=right:45% \
+        --bind "shift-up:preview-up" \
+        --bind "shift-down:preview-down" \
+        --bind "ctrl-/:change-preview-window(right,45%|down,40%|hidden)" \
+        --header-first \
+        --header $'enter: view  |  tab: select  |  ctrl-p: cherry-pick  |  ctrl-/: preview layout' \
+        --bind "enter:execute:$_view_commit" \
+        --bind "ctrl-p:execute($_cherry_pick)+abort"
+}
+
 gfwt() {
     git rev-parse --is-inside-work-tree &>/dev/null || return
 
@@ -150,3 +182,4 @@ compdef _git gdiff=git-diff
 compdef _git gfb=git-checkout
 compdef _git gfst=git-stash
 compdef _git gfwt=git-worktree
+compdef _git gfcp=git-log
