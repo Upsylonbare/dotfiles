@@ -90,6 +90,24 @@ k() {
     ps -ef | fzf --reverse | awk '{print $2}' | xargs kill -9
 }
 
+frg() {
+    rg --color=always --line-number --no-heading "$@" |
+        fzf \
+            --reverse \
+            --ansi \
+            --border=rounded \
+            --border-label=' Grep ' \
+            --delimiter=: \
+            --preview='bat --style=numbers --color=always --highlight-line {2} {1}' \
+            --preview-window='right:60%,+{2}+3/3' \
+            --bind "shift-up:preview-up" \
+            --bind "shift-down:preview-down" \
+            --bind "ctrl-/:change-preview-window(right,60%|down,40%|hidden)" \
+            --header-first \
+            --header $'enter: open in vscode  |  ctrl-/: preview layout' \
+            --bind "enter:execute-silent:code --goto {1}:{2}"
+}
+
 gdiff() {
     git rev-parse --is-inside-work-tree &>/dev/null || return
 
