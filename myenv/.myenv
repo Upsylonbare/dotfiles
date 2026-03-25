@@ -13,6 +13,7 @@ export EXA_COLORS="di=38;5;033:da=38;5;146"
 export LS_COLORS=${LS_COLORS//di=01\;34:/di=38\;5\;033:}
 
 export EDITOR=vim
+export LESS='-R -n -i'
 
 export HISTSIZE=100000
 export SAVEHIST=$HISTSIZE
@@ -94,7 +95,7 @@ gdiff() {
     path_to_repo="$(git rev-parse --show-toplevel)"
 
     local _preview_diff="git -C '$path_to_repo' diff -- {} | diff-so-fancy"
-    local _view_diff="git -C '$path_to_repo' diff -- {} | diff-so-fancy | less -R -n"
+    local _view_diff="git -C '$path_to_repo' diff -- {} | diff-so-fancy | less"
     local _view_file="bat --style=numbers --color=always '$path_to_repo/{}'"
 
     git diff "$@" --name-only --diff-filter=d |
@@ -153,7 +154,7 @@ lg() {
 my_git_log() {
     local _gitLogLineToHash="grep -o '[a-f0-9]\{12\}' | head -1"
     local _preview_commit="echo {} | $_gitLogLineToHash | xargs -I % sh -c 'git show --color=always % | diff-so-fancy'"
-    local _view_commit="echo {} | $_gitLogLineToHash | xargs -I % sh -c 'git show --color=always % | diff-so-fancy' | less -R -n"
+    local _view_commit="echo {} | $_gitLogLineToHash | xargs -I % sh -c 'git show --color=always % | diff-so-fancy' | less"
     local _copy_commit_hash="echo {} | $_gitLogLineToHash | xclip -r -selection clipboard"
     local _copy_commit_msg="echo {} | $_gitLogLineToHash | xargs -I HASH sh -c 'git log --pretty=format:\"%s%n%n%b\" -1 HASH' | xclip -r -selection clipboard"
     local _git_checkout="echo {} | $_gitLogLineToHash | xargs -I % sh -c 'git checkout %'"
