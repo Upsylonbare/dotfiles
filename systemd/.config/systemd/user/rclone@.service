@@ -1,0 +1,28 @@
+[Unit]
+Description=RClone mount for %i
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=notify
+EnvironmentFile=%h/.config/rclone/mounts/%i.env
+Environment=RCLONE_CONFIG=%h/.config/rclone/rclone.conf
+RestartSec=10
+ExecStartPre=/usr/bin/test -d ${MOUNT_PATH}
+ExecStart=/usr/bin/rclone mount %i: ${MOUNT_PATH} \
+    --dir-cache-time 5000h \
+    --syslog \
+    --poll-interval 10s \
+    --umask 0000 \
+    --cache-dir=/mnt/rclonecache/%i \
+    --vfs-cache-mode full \
+    --volname %i \
+    --vfs-cache-max-size 10G \
+    --vfs-read-chunk-size 128M \
+    --vfs-read-ahead 2G \
+    --vfs-cache-max-age 5000h
+ExecStop=/bin/fusermount -uz ${MOUNT_PATH}
+Restart=on-failure
+
+[Install]
+WantedBy=default.target
