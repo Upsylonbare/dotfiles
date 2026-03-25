@@ -145,8 +145,6 @@ fcd() {
     fi
 }
 
-source "$HOME/.myenv-proxy"
-
 download_some_backgrounds() {
     local rawsite
     rawsite=$(mktemp)
@@ -183,6 +181,7 @@ fssh() {
 }
 
 source "$HOME/.myenv-git"
+source "$HOME/.myenv-proxy"
 
 compdef _files fe
 compdef _cd fcd
