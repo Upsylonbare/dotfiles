@@ -292,16 +292,6 @@ download_some_backgrounds() {
     rm -f ~/Pictures/wallpapers/*.1
 }
 
-# From : https://unix.stackexchange.com/a/783056/509838
-# load_helper_functions () {
-#     emulate -LR zsh
-#     if ((!$+functions[$1])) || [[ $functions[$1] = 'builtin autoload'* ]]; then
-#         autoload +X +U $1
-#         functions[$1]=${functions[$1]%$'\n'*}
-#         $1
-#     fi
-# }
-# load_helper_functions _git
 compdef _git lg=git-log
 compdef _git gdiff=git-diff
 
