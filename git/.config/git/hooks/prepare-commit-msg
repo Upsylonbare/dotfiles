@@ -1,0 +1,37 @@
+#!/bin/sh
+
+COMMIT_MSG_FILE="$1"
+COMMIT_SOURCE="$2"
+
+if [ "$COMMIT_SOURCE" = "commit" ]; then
+    NOTE=$(git notes show HEAD 2>/dev/null)
+    if [ -n "$NOTE" ]; then
+        NOTE_FILE=$(mktemp)
+        TMPFILE=$(mktemp)
+
+        printf '\n# --- Git Note (read-only) ---\n' > "$NOTE_FILE"
+        printf '%s\n' "$NOTE" | sed 's/^/# /' >> "$NOTE_FILE"
+        printf '# ----------------------------\n\n' >> "$NOTE_FILE"
+
+        # Insert note before the first git comment block ("Please enter...", status, scissor)
+        inserted=0
+        while IFS= read -r line || [ -n "$line" ]; do
+            if [ "$inserted" -eq 0 ] && [ "${line#\#}" != "$line" ]; then
+                cat "$NOTE_FILE"
+                inserted=1
+            fi
+            printf '%s\n' "$line"
+        done < "$COMMIT_MSG_FILE" > "$TMPFILE"
+        # Fallback: append if no comment line was found
+        [ "$inserted" -eq 0 ] && cat "$NOTE_FILE" >> "$TMPFILE"
+        mv "$TMPFILE" "$COMMIT_MSG_FILE"
+
+        rm -f "$NOTE_FILE"
+    fi
+fi
+
+# Run local hook if it exists
+LOCAL_HOOK="$(git rev-parse --git-dir 2>/dev/null)/hooks/prepare-commit-msg"
+if [ -x "$LOCAL_HOOK" ]; then
+    "$LOCAL_HOOK" "$@"
+fi
