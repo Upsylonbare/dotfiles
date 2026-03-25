@@ -378,8 +378,30 @@ fssh() {
     [ -n "$host" ] && ssh "$host"
 }
 
+gwt() {
+    git rev-parse --is-inside-work-tree &>/dev/null || return
+
+    local _preview="git -C {1} log --oneline --color=always --format='%C(cyan)%h %C(blue)%ar %C(yellow)%s' -5"
+
+    git worktree list --porcelain | awk '/^worktree/{wt=$2} /^branch/{print wt " " $2}' |
+        fzf \
+            --reverse \
+            --border=rounded \
+            --border-label=' Git Worktree ' \
+            --preview="$_preview" \
+            --preview-window=right:60% \
+            --bind "shift-up:preview-up" \
+            --bind "shift-down:preview-down" \
+            --header-first \
+            --header 'enter: cd to worktree' \
+            --bind "enter:execute(echo {1})+abort" | read -r dir && cd "$dir"
+}
+
 compdef _git lg=git-log
 compdef _git gdiff=git-diff
+compdef _git gb=git-checkout
+compdef _git gst=git-stash
+compdef _git gwt=git-worktree
 compdef _files fe
 compdef _cd fcd
 
