@@ -120,15 +120,23 @@ gdiff() {
 
 fe() {
     local file
-    file=$(fzf --preview 'bat --style=numbers --color=always {}')
+    file=$(fzf \
+        --reverse \
+        --border=rounded \
+        --border-label=' Open File ' \
+        --preview 'bat --style=numbers --color=always {}' \
+        --preview-window=right:60%)
     if [ -n "$file" ]; then
-        editor "$file"
+        ${EDITOR:-vi} "$file"
     fi
 }
 
 fcd() {
     local dir
-    dir=$(find -L . -type d 2> /dev/null | fzf +m)
+    dir=$(find -L . -type d 2> /dev/null | fzf \
+        --reverse \
+        --border=rounded \
+        --border-label=' Go To Dir ')
 
     if [ -n "$dir" ]; then
         cd "$dir" || return 1
