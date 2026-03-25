@@ -145,77 +145,7 @@ fcd() {
     fi
 }
 
-proxy_config() {
-    local PROXY_CREDENTIAL_FILE="$HOME/.proxy/.credentials"
-    local PROXY_INFO_FILE="$HOME/.proxy/.info"
-    mkdir -p "${PROXY_CREDENTIAL_FILE%/*}"
-    test -f "$PROXY_CREDENTIAL_FILE" && chmod 600 "$PROXY_CREDENTIAL_FILE"
-    printf "Proxy Username: "
-    read -r ENTRY_user
-    printf "Proxy Password: "
-    read -rs ENTRY_pass
-    echo
-    printf "Proxy Server: "
-    read -r ENTRY_server
-    printf "No Proxy Domains: "
-    read -r ENTRY_no_proxy_domain
-    echo -n "${ENTRY_user}:${ENTRY_pass}" > "$PROXY_CREDENTIAL_FILE"
-    echo -n "${ENTRY_server} ${ENTRY_no_proxy_domain}" > "$PROXY_INFO_FILE"
-}
-
-proxy_set() {
-    local PROXY_CREDENTIAL_FILE="$HOME/.proxy/.credentials"
-    local NO_PROXY_BASE=localhost,127.0.0.0/8
-    local PROXY_INFO_FILE="$HOME/.proxy/.info"
-    test -f "${PROXY_CREDENTIAL_FILE}" || return 1
-    test -f "${PROXY_INFO_FILE}" || return 1
-    http_proxy=http://$(sed "s,:.*,," "$PROXY_CREDENTIAL_FILE" | \
-        od -A n -t x1 -w128 | \
-        head -1 | \
-        tr " " "%"):$(sed "s,[^:]\+:,," "$PROXY_CREDENTIAL_FILE" | \
-        od -A n -t x1 -w128 | \
-        head -1 | \
-        tr " " "%")@$(sed "s, .*,," "$PROXY_INFO_FILE")
-    https_proxy=http://$(sed "s,:.*,," "$PROXY_CREDENTIAL_FILE" | \
-        od -A n -t x1 -w128 | \
-        head -1 | \
-        tr " " "%"):$(sed "s,[^:]\+:,," "$PROXY_CREDENTIAL_FILE" | \
-        od -A n -t x1 -w128 | \
-        head -1 | \
-        tr " " "%")@$(sed "s, .*,," "$PROXY_INFO_FILE")
-    ftp_proxy=http://$(sed "s,:.*,," "$PROXY_CREDENTIAL_FILE" | \
-        od -A n -t x1 -w128 | \
-        head -1 | \
-        tr " " "%"):$(sed "s,[^:]\+:,," "$PROXY_CREDENTIAL_FILE" | \
-        od -A n -t x1 -w128 | \
-        head -1 | \
-        tr " " "%")@$(sed "s, .*,," "$PROXY_INFO_FILE")
-    use_proxy=on
-    no_proxy=$(sed "s/.* \([^ ]*\)$/\1/" "$PROXY_INFO_FILE"),${NO_PROXY_BASE}
-
-    export http_proxy
-    export https_proxy
-    export ftp_proxy
-    export no_proxy
-    export use_proxy
-}
-
-proxy_echo() {
-    if [ -n "$https_proxy" ]; then echo "https_proxy=$https_proxy"; fi
-    if [ -n "$http_proxy" ];  then echo "http_proxy=$http_proxy";  fi
-    if [ -n "$ftp_proxy" ];   then echo "ftp_proxy=$ftp_proxy";    fi
-    if [ -n "$no_proxy" ];    then echo "no_proxy=$no_proxy";      fi
-    if [ -n "$use_proxy" ];   then echo "use_proxy=$use_proxy";    fi
-}
-
-proxy_unset() {
-    unset https_proxy
-    unset http_proxy
-    unset ftp_proxy
-    unset no_proxy
-    unset use_proxy
-
-}
+source "$HOME/.myenv-proxy"
 
 download_some_backgrounds() {
     local rawsite
