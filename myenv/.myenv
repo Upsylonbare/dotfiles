@@ -270,9 +270,11 @@ speed_lg() {
 }
 
 download_some_backgrounds() {
+    local rawsite
     rawsite=$(mktemp)
     curl -s https://www.imoca.org/fr -o "$rawsite"
 
+    local cleanedsite
     cleanedsite=$(mktemp)
     tidy -q -o "$cleanedsite" "$rawsite" 2>/dev/null
 
@@ -287,7 +289,7 @@ download_some_backgrounds() {
         wget -P ~/Pictures/wallpapers/ "$image_url"
     done <<< "$images_list"
 
-    rm ~/Pictures/wallpapers/*.1
+    rm -f ~/Pictures/wallpapers/*.1
 }
 
 # From : https://unix.stackexchange.com/a/783056/509838
