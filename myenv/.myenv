@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 
 # Colored manpages
 export LESS_TERMCAP_mb=$'\e[1;32m'
