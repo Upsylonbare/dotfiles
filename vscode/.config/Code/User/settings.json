@@ -19,11 +19,24 @@
     "terminal.integrated.profiles.linux": {
         "zsh": {
             "path": "/usr/bin/zsh",
-            "args": ["-l", "-i"]
+            "args": [
+                "-l",
+                "-i"
+            ]
         },
     },
     "window.autoDetectColorScheme": true,
-    "workbench.colorTheme": "Default Light Modern",
+    "workbench.colorTheme": "Light Modern",
     "workbench.startupEditor": "none",
     "editor.inlayHints.enabled": "off",
+    "github.copilot.nextEditSuggestions.enabled": true,
+    "clangd.checkUpdates": false,
+    "cmake.enableAutomaticKitScan": false,
+    "cmake.configureOnOpen": false,
+    "cmake.configureOnEdit": false,
+    "gitlab.duoChat.enabled": false,
+    "chat.editing.confirmEditRequestRemoval": false,
+    "chat.viewSessions.orientation": "stacked",
+    "claudeCode.preferredLocation": "panel",
+    "claudeCode.selectedModel": "default",
 }
