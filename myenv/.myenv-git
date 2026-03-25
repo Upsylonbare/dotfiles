@@ -1,0 +1,152 @@
+#!/bin/zsh
+
+gdiff() {
+    git rev-parse --is-inside-work-tree &>/dev/null || return
+
+    local path_to_repo
+    path_to_repo="$(git rev-parse --show-toplevel)"
+
+    local _preview_diff="git -C '$path_to_repo' diff -- {} | diff-so-fancy"
+    local _view_diff="git -C '$path_to_repo' diff -- {} | diff-so-fancy | less"
+    local _view_file="bat --style=numbers --color=always '$path_to_repo/{}'"
+
+    git diff "$@" --name-only --diff-filter=d |
+        fzf \
+            --reverse \
+            --tiebreak=index \
+            --no-multi \
+            --ansi \
+            --border=rounded \
+            --border-label=' Git Diff ' \
+            --preview="$_preview_diff" \
+            --preview-window=right:60% \
+            --bind "shift-up:preview-up" \
+            --bind "shift-down:preview-down" \
+            --bind "ctrl-/:change-preview-window(right,60%|down,40%|hidden)" \
+            --header-first \
+            --header $'enter: view diff  |  ctrl-f: view file  |  ctrl-/: preview layout' \
+            --bind "enter:execute:$_view_diff" \
+            --bind "ctrl-f:execute:$_view_file"
+}
+
+gb() {
+    git rev-parse --is-inside-work-tree &>/dev/null || return
+
+    local _preview="git log --oneline --color=always --format='%C(cyan)%h %C(blue)%ar %C(yellow)%s' -10 {1}"
+
+    git branch --all --color=never --format='%(refname:short)' |
+        fzf \
+            --reverse \
+            --ansi \
+            --border=rounded \
+            --border-label=' Git Branch ' \
+            --preview="$_preview" \
+            --preview-window=right:60% \
+            --bind "shift-up:preview-up" \
+            --bind "shift-down:preview-down" \
+            --header-first \
+            --header 'enter: checkout' \
+            --bind "enter:execute(git checkout {1})+abort"
+}
+
+gst() {
+    git rev-parse --is-inside-work-tree &>/dev/null || return
+
+    local _preview="echo {} | grep -o 'stash@{[0-9]*}' | xargs git stash show --color=always -p | diff-so-fancy"
+
+    git stash list |
+        fzf \
+            --reverse \
+            --ansi \
+            --border=rounded \
+            --border-label=' Git Stash ' \
+            --preview="$_preview" \
+            --preview-window=right:60% \
+            --bind "shift-up:preview-up" \
+            --bind "shift-down:preview-down" \
+            --bind "ctrl-/:change-preview-window(right,60%|down,40%|hidden)" \
+            --header-first \
+            --header $'enter: view  |  ctrl-p: pop  |  ctrl-d: drop' \
+            --bind "enter:execute:echo {} | grep -o 'stash@{[0-9]*}' | xargs git stash show --color=always -p | diff-so-fancy | less" \
+            --bind "ctrl-p:execute(echo {} | grep -o 'stash@{[0-9]*}' | xargs git stash pop)+abort" \
+            --bind "ctrl-d:execute(echo {} | grep -o 'stash@{[0-9]*}' | xargs git stash drop)+reload(git stash list)"
+}
+
+lg() {
+    git rev-parse --is-inside-work-tree &>/dev/null || return
+    if [ $# -eq 0 ]; then
+        my_git_log -10000
+    else
+        my_git_log "$@"
+    fi
+}
+
+my_git_log() {
+    local _gitLogLineToHash="grep -o '[a-f0-9]\{12\}' | head -1"
+    local _preview_commit="echo {} | $_gitLogLineToHash | xargs -I % sh -c 'git show --color=always % | diff-so-fancy'"
+    local _view_commit="echo {} | $_gitLogLineToHash | xargs -I % sh -c 'git show --color=always % | diff-so-fancy' | less"
+    local _copy_commit_hash="echo {} | $_gitLogLineToHash | xclip -r -selection clipboard"
+    local _copy_commit_msg="echo {} | $_gitLogLineToHash | xargs -I HASH sh -c 'git log --pretty=format:\"%s%n%n%b\" -1 HASH' | xclip -r -selection clipboard"
+    local _git_checkout="echo {} | $_gitLogLineToHash | xargs -I % sh -c 'git checkout %'"
+    local _git_rebase="echo {} | $_gitLogLineToHash | xargs -I % sh -c 'git rebase -i %'"
+    local _revert_commit="echo {} | $_gitLogLineToHash | xargs -I % sh -c 'git revert %'"
+
+    git log \
+    --abbrev=12 \
+    --graph \
+    --oneline \
+    --color=always \
+    --format="%C(cyan)%h %C(blue)%ar %C(auto)%d %C(yellow)%s %C(white)%ae" "$@" |
+    fzf -i -e +s \
+        --reverse \
+        --tiebreak=index \
+        --no-multi \
+        --ansi \
+        --border=rounded \
+        --border-label=' Git Log ' \
+        --preview="$_preview_commit" \
+        --preview-window=right:45% \
+        --bind "shift-up:preview-up" \
+        --bind "shift-down:preview-down" \
+        --bind "ctrl-/:change-preview-window(right,45%|down,40%|hidden)" \
+        --header-first \
+        --header $'enter: view  |  ctrl-y: copy hash  |  alt-y: copy msg  |  ctrl-x: checkout\nctrl-r: rebase  |  ctrl-z: revert  |  ctrl-/: preview layout' \
+        --bind "enter:execute:$_view_commit" \
+        --bind "ctrl-y:execute-silent:$_copy_commit_hash" \
+        --bind "alt-y:execute-silent:$_copy_commit_msg" \
+        --bind "ctrl-x:execute:$_git_checkout" \
+        --bind "ctrl-r:execute($_git_rebase)+abort" \
+        --bind "ctrl-z:execute:$_revert_commit"
+}
+
+gwt() {
+    git rev-parse --is-inside-work-tree &>/dev/null || return
+
+    local _preview="git -C {1} log --oneline --color=always --format='%C(cyan)%h %C(blue)%ar %C(yellow)%s' -5"
+
+    git worktree list --porcelain | awk '/^worktree/{wt=$2} /^branch/{print wt " " $2}' |
+        fzf \
+            --reverse \
+            --border=rounded \
+            --border-label=' Git Worktree ' \
+            --preview="$_preview" \
+            --preview-window=right:60% \
+            --bind "shift-up:preview-up" \
+            --bind "shift-down:preview-down" \
+            --header-first \
+            --header 'enter: cd to worktree' \
+            --bind "enter:execute(echo {1})+abort" | read -r dir && cd "$dir"
+}
+
+# Function to speed up git log command (write commit graph in .git/objects/info/commit-graph)
+speed_lg() {
+    git config --global core.commitGraph true
+    git config --global gc.writeCommitGraph true
+    git commit-graph write
+}
+
+compdef _git lg=git-log
+compdef _git gdiff=git-diff
+compdef _git gb=git-checkout
+compdef _git gst=git-stash
+compdef _git gwt=git-worktree
