@@ -119,7 +119,7 @@ my_git_log() {
         --bind "ctrl-z:execute:$_revert_commit"
 }
 
-gwt() {
+gfwt() {
     git rev-parse --is-inside-work-tree &>/dev/null || return
 
     local _preview="git -C {1} log --oneline --color=always --format='%C(cyan)%h %C(blue)%ar %C(yellow)%s' -5"
@@ -149,4 +149,4 @@ compdef _git lg=git-log
 compdef _git gdiff=git-diff
 compdef _git gfb=git-checkout
 compdef _git gfst=git-stash
-compdef _git gwt=git-worktree
+compdef _git gfwt=git-worktree
