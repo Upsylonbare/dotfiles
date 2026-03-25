@@ -76,6 +76,7 @@ alias wget='wget --hsts-file "$XDG_CONFIG_HOME"/wget/.wget-hsts'
 alias gitka='gitk --all --max-count=15000'
 alias s='s -p google'
 alias clip='xclip -r -selection clipboard'
+alias paste='xclip -r -selection clipboard -o'
 
 alias findall='find * | \
     fzf --prompt "All> " \
