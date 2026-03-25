@@ -67,6 +67,7 @@ alias path="echo \$PATH | tr ':' '\n'"
 alias ll='eza -laF --group-directories-first --header --long --icons=always'
 alias la='eza -a --group-directories-first --icons=always'
 alias l='eza -lF --group-directories-first --header --long --icons=always'
+alias lt='eza --tree --level=2 --icons=always --group-directories-first'
 
 alias up='sudo apt-get update -y && sudo apt-get upgrade -y'
 alias reload='echo "Sourcing environnement"; source ~/.zshrc'
