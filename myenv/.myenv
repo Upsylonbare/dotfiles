@@ -125,7 +125,7 @@ fe() {
         --preview 'bat --style=numbers --color=always {}' \
         --preview-window=right:60%)
     if [ -n "$file" ]; then
-        ${EDITOR:-vi} "$file"
+        code "$file"
     fi
 }
 
