@@ -255,8 +255,7 @@ proxy_unset() {
 }
 
 # Function to speed up git log command (write commit graph in .git/objects/info/commit-graph)
-speed_lg()
-{
+speed_lg() {
     git config --global core.commitGraph true
     git config --global gc.writeCommitGraph true
     git commit-graph write
