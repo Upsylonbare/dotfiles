@@ -9,6 +9,8 @@ gdiff() {
     local _preview_diff="git -C '$path_to_repo' diff -- {} | diff-so-fancy"
     local _view_diff="git -C '$path_to_repo' diff -- {} | diff-so-fancy | less"
     local _view_file="bat --style=numbers --color=always '$path_to_repo/{}'"
+    local _checkout_file="git -C '$path_to_repo' restore -- {}"
+    local _checkout_hunk="git -C '$path_to_repo' restore -p -- {}"
 
     git diff "$@" --name-only --diff-filter=d |
         fzf \
@@ -24,9 +26,11 @@ gdiff() {
             --bind "shift-down:preview-down" \
             --bind "ctrl-/:change-preview-window(right,60%|down,40%|hidden)" \
             --header-first \
-            --header $'enter: view diff  |  ctrl-f: view file  |  ctrl-/: preview layout' \
+            --header $'enter: view diff  |  ctrl-f: view file  |  ctrl-o: checkout file  |  ctrl-p: checkout hunk  |  ctrl-/: preview layout' \
             --bind "enter:execute:$_view_diff" \
-            --bind "ctrl-f:execute:$_view_file"
+            --bind "ctrl-f:execute:$_view_file" \
+            --bind "ctrl-o:execute($_checkout_file)+reload(git diff $@ --name-only --diff-filter=d)" \
+            --bind "ctrl-p:execute:$_checkout_hunk"
 }
 
 gfb() {
@@ -88,7 +92,7 @@ my_git_log() {
     local _copy_commit_hash="echo {} | $_gitLogLineToHash | xclip -r -selection clipboard"
     local _copy_commit_msg="echo {} | $_gitLogLineToHash | xargs -I HASH sh -c 'git log --pretty=format:\"%s%n%n%b\" -1 HASH' | xclip -r -selection clipboard"
     local _git_checkout="echo {} | $_gitLogLineToHash | xargs -I % sh -c 'git checkout %'"
-    local _git_rebase="echo {} | $_gitLogLineToHash | xargs -I % sh -c 'git rebase -i %'"
+    local _git_rebase="echo {} | $_gitLogLineToHash | xargs -I % sh -c 'git rebase -i % </dev/tty >/dev/tty'"
     local _revert_commit="echo {} | $_gitLogLineToHash | xargs -I % sh -c 'git revert %'"
 
     git log \
