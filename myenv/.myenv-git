@@ -29,7 +29,7 @@ gdiff() {
             --bind "ctrl-f:execute:$_view_file"
 }
 
-gb() {
+gfb() {
     git rev-parse --is-inside-work-tree &>/dev/null || return
 
     local _preview="git log --oneline --color=always --format='%C(cyan)%h %C(blue)%ar %C(yellow)%s' -10 {1}"
@@ -147,6 +147,6 @@ speed_lg() {
 
 compdef _git lg=git-log
 compdef _git gdiff=git-diff
-compdef _git gb=git-checkout
+compdef _git gfb=git-checkout
 compdef _git gfst=git-stash
 compdef _git gwt=git-worktree
