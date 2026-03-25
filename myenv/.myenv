@@ -90,24 +90,33 @@ k() {
     ps -ef | fzf --reverse | awk '{print $2}' | xargs kill -9
 }
 
-_view_file="echo {} | xargs -I % sh -c 'bat --style=numbers --color=always % | less -R'"
-_view_diff="echo {} | xargs -I % sh -c 'git diff % | diff-so-fancy' | less -R"
-
 gdiff() {
+    git rev-parse --is-inside-work-tree &>/dev/null || return
+
     local path_to_repo
     path_to_repo="$(git rev-parse --show-toplevel)"
-    git diff \
-        "$@" \
-        --name-only | sed "s,^,$path_to_repo/," |
-            fzf -m \
-                --reverse \
-                --tiebreak=index \
-                --no-multi \
-                --ansi \
-                --preview="git diff {} | diff-so-fancy" \
-                --header "Enter: view diff, CTRL-f: view file" \
-                --bind "ctrl-f:execute:$_view_file" \
-                --bind "enter:execute:$_view_diff"
+
+    local _preview_diff="git -C '$path_to_repo' diff -- {} | diff-so-fancy"
+    local _view_diff="git -C '$path_to_repo' diff -- {} | diff-so-fancy | less -R -n"
+    local _view_file="bat --style=numbers --color=always '$path_to_repo/{}'"
+
+    git diff "$@" --name-only --diff-filter=d |
+        fzf \
+            --reverse \
+            --tiebreak=index \
+            --no-multi \
+            --ansi \
+            --border=rounded \
+            --border-label=' Git Diff ' \
+            --preview="$_preview_diff" \
+            --preview-window=right:60% \
+            --bind "shift-up:preview-up" \
+            --bind "shift-down:preview-down" \
+            --bind "ctrl-/:change-preview-window(right,60%|down,40%|hidden)" \
+            --header-first \
+            --header $'enter: view diff  |  ctrl-f: view file  |  ctrl-/: preview layout' \
+            --bind "enter:execute:$_view_diff" \
+            --bind "ctrl-f:execute:$_view_file"
 }
 
 fe() {
@@ -136,15 +145,16 @@ lg() {
     fi
 }
 
-_gitLogLineToHash="grep -o '[a-f0-9]\{12\}' | head -1"
-_view_commit="echo {} | $_gitLogLineToHash | xargs -I % sh -c 'git show --color=always % | diff-so-fancy' | less -R -n --mouse"
-_copy_commit_hash="echo {} | $_gitLogLineToHash | xclip -r -selection clipboard"
-_git_checkout="echo {} | $_gitLogLineToHash | xargs -I % sh -c 'git checkout %'"
-_git_rebase="echo {} | $_gitLogLineToHash | xargs -I % sh -c 'git rebase -i %'"
-_revert_commit="$_gitLogLineToHash | xargs -I % sh -c 'git revert %'"
-_test="echo {} | $_gitLogLineToHash | xargs -I % sh -c 'git show --color=always %' | less -R -n --mouse"
-
 my_git_log() {
+    local _gitLogLineToHash="grep -o '[a-f0-9]\{12\}' | head -1"
+    local _preview_commit="echo {} | $_gitLogLineToHash | xargs -I % sh -c 'git show --color=always % | diff-so-fancy'"
+    local _view_commit="echo {} | $_gitLogLineToHash | xargs -I % sh -c 'git show --color=always % | diff-so-fancy' | less -R -n"
+    local _copy_commit_hash="echo {} | $_gitLogLineToHash | xclip -r -selection clipboard"
+    local _copy_commit_msg="echo {} | $_gitLogLineToHash | xargs -I HASH sh -c 'git log --pretty=format:\"%s%n%n%b\" -1 HASH' | xclip -r -selection clipboard"
+    local _git_checkout="echo {} | $_gitLogLineToHash | xargs -I % sh -c 'git checkout %'"
+    local _git_rebase="echo {} | $_gitLogLineToHash | xargs -I % sh -c 'git rebase -i %'"
+    local _revert_commit="echo {} | $_gitLogLineToHash | xargs -I % sh -c 'git revert %'"
+
     git log \
     --abbrev=12 \
     --graph \
@@ -156,13 +166,21 @@ my_git_log() {
         --tiebreak=index \
         --no-multi \
         --ansi \
-        --preview="$_view_commit" \
-        --header "enter: view, CTRL+c: copy hash, CTRL+x: checkout, CTRL+r: rebase" \
+        --border=rounded \
+        --border-label=' Git Log ' \
+        --preview="$_preview_commit" \
+        --preview-window=right:45% \
+        --bind "shift-up:preview-up" \
+        --bind "shift-down:preview-down" \
+        --bind "ctrl-/:change-preview-window(right,45%|down,40%|hidden)" \
+        --header-first \
+        --header $'enter: view  |  ctrl-y: copy hash  |  alt-y: copy msg  |  ctrl-x: checkout\nctrl-r: rebase  |  ctrl-z: revert  |  ctrl-/: preview layout' \
         --bind "enter:execute:$_view_commit" \
-        --bind "ctrl-c:execute:$_copy_commit_hash" \
+        --bind "ctrl-y:execute-silent:$_copy_commit_hash" \
+        --bind "alt-y:execute-silent:$_copy_commit_msg" \
         --bind "ctrl-x:execute:$_git_checkout" \
         --bind "ctrl-r:execute($_git_rebase)+abort" \
-        --bind "ctrl-t:execute:$_test"
+        --bind "ctrl-z:execute:$_revert_commit"
 }
 
 proxy_config() {
