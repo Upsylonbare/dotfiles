@@ -87,7 +87,19 @@ alias findall='find * | \
 
 
 k() {
-    ps -ef | fzf --reverse | awk '{print $2}' | xargs kill -9
+    local _preview="echo {} | awk '{print \$2}' | xargs -I % sh -c 'ps -p % -o pid,ppid,user,%cpu,%mem,etime,cmd --no-headers 2>/dev/null'"
+
+    ps -ef | tail -n +2 |
+        fzf \
+            --reverse \
+            --border=rounded \
+            --border-label=' Kill Process ' \
+            --header-first \
+            --header $'enter: SIGTERM  |  ctrl-9: SIGKILL' \
+            --preview="$_preview" \
+            --preview-window=down:4:wrap \
+            --bind "enter:execute-silent(echo {} | awk '{print \$2}' | xargs kill)+abort" \
+            --bind "ctrl-9:execute-silent(echo {} | awk '{print \$2}' | xargs kill -9)+abort"
 }
 
 frg() {
