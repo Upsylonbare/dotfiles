@@ -85,7 +85,6 @@ alias findall='find * | \
         --bind "ctrl-d:change-prompt(Directories>)+reload(find * -type d)" \
         --bind "ctrl-f:change-prompt(Files>)+reload(find * -type f)" | xargs realpath | xclip -r -selection clipboard'
 
-
 k() {
     local _preview="echo {} | awk '{print \$2}' | xargs -I % sh -c 'ps -p % -o pid,ppid,user,%cpu,%mem,etime,cmd --no-headers 2>/dev/null'"
 
@@ -95,11 +94,11 @@ k() {
             --border=rounded \
             --border-label=' Kill Process ' \
             --header-first \
-            --header $'enter: SIGTERM  |  ctrl-9: SIGKILL' \
+            --header $'enter: SIGTERM  |  ctrl-k: SIGKILL' \
             --preview="$_preview" \
             --preview-window=down:4:wrap \
             --bind "enter:execute-silent(echo {} | awk '{print \$2}' | xargs kill)+abort" \
-            --bind "ctrl-9:execute-silent(echo {} | awk '{print \$2}' | xargs kill -9)+abort"
+            --bind "ctrl-k:execute-silent(echo {} | awk '{print \$2}' | xargs kill -9)+abort"
 }
 
 frg() {
