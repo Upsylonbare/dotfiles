@@ -85,6 +85,8 @@ alias findall='find * | \
         --bind "ctrl-d:change-prompt(Directories>)+reload(find * -type d)" \
         --bind "ctrl-f:change-prompt(Files>)+reload(find * -type f)" | xargs realpath | xclip -r -selection clipboard'
 
+alias dot='code ~/.dotfiles'
+
 k() {
     local _preview="echo {} | awk '{print \$2}' | xargs -I % sh -c 'ps -p % -o pid,ppid,user,%cpu,%mem,etime,cmd --no-headers 2>/dev/null'"
 
