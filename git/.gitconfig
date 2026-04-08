@@ -53,3 +53,18 @@
 	rewriteRef = refs/notes/commits
 [b4]
 	prep-perpatch-check-cmd = ./scripts/checkpatch.pl -q --terse --no-summary --showfile --codespell --codespellfile /usr/lib/python3/dist-packages/codespell_lib/data/dictionary.txt
+[color]
+	ui = true
+[color "diff-highlight"]
+	oldNormal = red bold
+	oldHighlight = red bold 52
+	newNormal = green bold
+	newHighlight = green bold 22
+[color "diff"]
+	meta = 11
+	frag = magenta bold
+	func = 146 bold
+	commit = yellow bold
+	old = red bold
+	new = green bold
+	whitespace = red reverse
