@@ -9,6 +9,8 @@ gdiff() {
     local _preview_diff="git -C '$path_to_repo' diff -- {} | diff-so-fancy"
     local _view_diff="git -C '$path_to_repo' diff -- {} | diff-so-fancy | less"
     local _view_file="bat --style=numbers --color=always '$path_to_repo/{}'"
+    local _stage_file="git -C '$path_to_repo' add -- {}"
+    local _stage_hunk="git -C '$path_to_repo' add -p -- {}"
     local _checkout_file="git -C '$path_to_repo' restore -- {}"
     local _checkout_hunk="git -C '$path_to_repo' restore -p -- {}"
 
@@ -26,11 +28,13 @@ gdiff() {
             --bind "shift-down:preview-down" \
             --bind "ctrl-/:change-preview-window(right,60%|down,40%|hidden)" \
             --header-first \
-            --header $'enter: view diff  |  ctrl-f: view file  |  ctrl-o: checkout file  |  ctrl-p: checkout hunk  |  ctrl-/: preview layout' \
+            --header $'enter: view diff  |  ctrl-f: view file  |  ctrl-a: stage  |  ctrl-s: stage hunk\nctrl-o: checkout file  |  ctrl-p: checkout hunk  |  ctrl-/: preview layout' \
             --bind "enter:execute:$_view_diff" \
             --bind "ctrl-f:execute:$_view_file" \
+            --bind "ctrl-a:execute($_stage_file)+reload(git diff $@ --name-only --diff-filter=d)" \
+            --bind "ctrl-s:execute($_stage_hunk)+reload(git diff $@ --name-only --diff-filter=d)" \
             --bind "ctrl-o:execute($_checkout_file)+reload(git diff $@ --name-only --diff-filter=d)" \
-            --bind "ctrl-p:execute:$_checkout_hunk"
+            --bind "ctrl-p:execute($_checkout_hunk)+reload(git diff $@ --name-only --diff-filter=d)"
 }
 
 gfb() {
