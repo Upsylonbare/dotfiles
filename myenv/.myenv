@@ -87,6 +87,8 @@ alias findall='find * | \
 
 alias dot='code ~/.dotfiles'
 
+tmp() { cd "$(mktemp -d)"; }
+
 k() {
     local _preview="echo {} | awk '{print \$2}' | xargs -I % sh -c 'ps -p % -o pid,ppid,user,%cpu,%mem,etime,cmd --no-headers 2>/dev/null'"
 
