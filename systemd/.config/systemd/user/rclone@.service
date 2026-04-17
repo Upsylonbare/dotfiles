@@ -21,7 +21,10 @@ ExecStart=/usr/bin/rclone mount %i: ${MOUNT_PATH} \
     --vfs-read-chunk-size 128M \
     --vfs-read-ahead 2G \
     --vfs-cache-max-age 5000h \
-    --vfs-write-back 5m
+    --vfs-write-back 5m \
+    --rc \
+    --rc-no-auth \
+    --rc-addr localhost:${RC_PORT}
 ExecStop=/bin/fusermount -uz ${MOUNT_PATH}
 Restart=on-failure
 

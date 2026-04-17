@@ -183,6 +183,114 @@ fssh() {
     [ -n "$host" ] && ssh "$host"
 }
 
+lo-debug() {
+    local rc_mode=0
+    local threshold_ms=100
+
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            -h|--help)
+                echo "Usage: lo-debug [-r] [threshold_ms]"
+                echo ""
+                echo "Identify LibreOffice I/O bottlenecks on rclone-mounted cloud storage."
+                echo ""
+                echo "Options:"
+                echo "  -r, --rc      Low-overhead mode: poll rclone RC API stats (no strace)"
+                echo "  threshold_ms  strace mode only — min duration in ms to report (default: 100)"
+                echo ""
+                echo "Both modes use fzf to pick among running rclone mounts."
+                echo ""
+                echo "strace mode (default) — attaches to LibreOffice and rclone in parallel:"
+                echo "  \033[33mSLOW  891ms\033[0m  [libreoffice]    fsync(7) = 0         <- LO waiting for flush"
+                echo "  \033[36mSLOW  887ms\033[0m  [rclone@gdrive]  recvfrom(12, ...) =  <- actual network wait"
+                echo "  Correlated slow calls = network latency. LO-only = local cache pressure."
+                echo "  LibreOffice: write, pwrite64, read, pread64, fsync, fdatasync"
+                echo "  rclone:      recvfrom, recvmsg, sendto, sendmsg"
+                echo ""
+                echo "RC mode (-r) — polls rclone transfer stats every 2s with no process overhead."
+                echo "  Requires RC_PORT=<port> in ~/.config/rclone/mounts/<remote>.env"
+                echo "  and rclone started with --rc --rc-no-auth --rc-addr localhost:\${RC_PORT}"
+                return 0
+                ;;
+            -r|--rc) rc_mode=1; shift ;;
+            [0-9]*) threshold_ms="$1"; shift ;;
+            *) shift ;;
+        esac
+    done
+
+    local remote
+    remote=$(systemctl --user list-units 'rclone@*.service' --state=running --no-legend \
+        | awk '{sub(/rclone@/, "", $1); sub(/\.service/, "", $1); print $1}' \
+        | fzf \
+            --reverse \
+            --border=rounded \
+            --border-label=' LibreOffice I/O Debug ' \
+            --preview="grep MOUNT_PATH ~/.config/rclone/mounts/{}.env 2>/dev/null" \
+            --preview-window=down:3 \
+            --header-first \
+            --header "enter: $([ $rc_mode -eq 1 ] && echo 'poll RC stats' || echo "strace (threshold: ${threshold_ms}ms)")")
+    [ -z "$remote" ] && return
+
+    if [ $rc_mode -eq 1 ]; then
+        local rc_port
+        rc_port=$(grep '^RC_PORT=' ~/.config/rclone/mounts/${remote}.env 2>/dev/null | cut -d= -f2)
+        if [ -z "$rc_port" ]; then
+            echo "RC_PORT not set in ~/.config/rclone/mounts/${remote}.env"
+            echo "Add RC_PORT=<port> and restart rclone@${remote}"
+            return 1
+        fi
+        echo "Polling rclone@$remote RC stats (port $rc_port) every 2s. Ctrl-C to stop."
+        while true; do
+            printf "\033[2J\033[H"
+            printf "rclone@$remote  $(date +%H:%M:%S)\n\n"
+            rclone rc core/stats --url "http://localhost:${rc_port}" 2>/dev/null \
+                | jq -r '"Speed:     \(.speed / 1048576 | . * 10 | floor / 10) MB/s",
+                          "Transfers: \(.transfers)",
+                          "Errors:    \(.errors)",
+                          (if (.transferring | length) > 0 then "\nActive:" else "" end),
+                          (.transferring[]? | "  \(.name)  \(.percentage // 0)%  \(.speedAvg / 1048576 | . * 10 | floor / 10) MB/s")' \
+                || echo "RC API unreachable at localhost:${rc_port}"
+            sleep 2
+        done
+        return
+    fi
+
+    local lo_pid
+    lo_pid=$(pgrep -f soffice 2>/dev/null | head -1)
+    if [ -z "$lo_pid" ]; then
+        echo "LibreOffice is not running"
+        return 1
+    fi
+
+    local rclone_pid
+    rclone_pid=$(systemctl --user show "rclone@${remote}.service" --property=MainPID --value)
+    if [ -z "$rclone_pid" ] || [ "$rclone_pid" -eq 0 ]; then
+        echo "Could not find rclone PID for $remote"
+        return 1
+    fi
+
+    echo "Tracing LibreOffice (PID $lo_pid) + rclone@$remote (PID $rclone_pid)"
+    echo "Showing calls slower than ${threshold_ms}ms. Ctrl-C to stop.\n"
+
+    {
+        strace -T -qq -p "$lo_pid" \
+            -e trace=write,pwrite64,read,pread64,fsync,fdatasync 2>&1 \
+            | sed "s/^/[libreoffice] /" &
+        strace -T -qq -p "$rclone_pid" \
+            -e trace=recvfrom,recvmsg,sendto,sendmsg 2>&1 \
+            | sed "s/^/[rclone@${remote}] /" &
+        wait
+    } | awk -v t="$threshold_ms" '
+        match($0, /<([0-9]+)\.([0-9]{6})>$/, a) {
+            ms = a[1]*1000 + int(a[2]/1000)
+            if (ms >= t) {
+                color = (index($0, "[rclone") > 0) ? "\033[36m" : "\033[33m"
+                printf "%sSLOW %4dms\033[0m  %s\n", color, ms, $0
+            }
+        }
+    '
+}
+
 source "$HOME/.myenv-git"
 source "$HOME/.myenv-proxy"
 
