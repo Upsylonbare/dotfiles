@@ -12,7 +12,7 @@ ExecStartPre=/usr/bin/test -d ${MOUNT_PATH}
 ExecStart=/usr/bin/rclone mount %i: ${MOUNT_PATH} \
     --dir-cache-time 5000h \
     --syslog \
-    --poll-interval 10s \
+    --poll-interval 1m \
     --umask 0000 \
     --cache-dir=/mnt/rclonecache/%i \
     --vfs-cache-mode full \
@@ -20,7 +20,8 @@ ExecStart=/usr/bin/rclone mount %i: ${MOUNT_PATH} \
     --vfs-cache-max-size 10G \
     --vfs-read-chunk-size 128M \
     --vfs-read-ahead 2G \
-    --vfs-cache-max-age 5000h
+    --vfs-cache-max-age 5000h \
+    --vfs-write-back 5m
 ExecStop=/bin/fusermount -uz ${MOUNT_PATH}
 Restart=on-failure
 
