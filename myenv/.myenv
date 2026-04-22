@@ -18,8 +18,21 @@ export LESS='-R -n -i'
 export HISTSIZE=100000
 export SAVEHIST=$HISTSIZE
 
-# Function to add a directory to PATH (append to end)
-add_to_path() {
+# Function to add a directory to the beginning of PATH
+add_first_to_path() {
+    if [ -d "$1" ] ; then
+        case ":$PATH:" in
+            *:"$1":*)
+                ;;
+            *)
+                PATH="$1:$PATH"
+                ;;
+        esac
+    fi
+}
+
+# Function to add a directory to the end of PATH
+add_last_to_path() {
     if [ -d "$1" ] ; then
         case ":$PATH:" in
             *:"$1":*)
@@ -54,10 +67,10 @@ remove_first_from_path() {
 }
 
 # Add your custom directories to PATH
-add_to_path "$HOME/bin"
-add_to_path "$HOME/.local/bin"
-add_to_path "$HOME/go/bin"
-add_to_path "$HOME/.cargo/bin"
+add_first_to_path "$HOME/bin"
+add_last_to_path "$HOME/.local/bin"
+add_last_to_path "$HOME/go/bin"
+add_last_to_path "$HOME/.cargo/bin"
 
 source "$HOME/bin/utils.sh"
 
